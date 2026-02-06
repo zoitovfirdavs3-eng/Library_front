@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Tasdiqlash - Kutubxona</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .message.success {
+            background-color: #10b981;
+            color: white;
+            border: 1px solid #059669;
+        }
+        
+        .message.error {
+            background-color: #ef4444;
+            color: white;
+            border: 1px solid #dc2626;
+        }
+        
+        .loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .otp-input {
+            letter-spacing: 0.5em;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #0f172a;
+                color: #f1f5f9;
+            }
+            
+            .card {
+                background-color: #1e293b;
+                border-color: #334155;
+            }
+            
+            .input {
+                background-color: #374151;
+                border-color: #4b5563;
+                color: #f9fafb;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div class="w-full max-w-md mx-4">
+        <div class="card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    OTP Tasdiqlash
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    <span>Emailingiz yuborilgan 6 xonali kodni kiriting:</span>
+                    <br>
+                    <strong id="emailDisplay" class="text-blue-600 dark:text-blue-400"></strong>
+                </p>
+            </div>
+
+            <!-- Message Display -->
+            <div id="message" class="message" style="display: none;"></div>
+
+            <!-- OTP Form -->
+            <form id="otpForm" class="space-y-6">
+                <div>
+                    <label for="otpInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        OTP Kod
+                    </label>
+                    <input 
+                        type="text" 
+                        id="otpInput" 
+                        maxlength="6" 
+                        placeholder="123456"
+                        class="otp-input input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        required
+                        autocomplete="one-time-code"
+                    >
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        Faqat raqamlar (6 ta belgi)
+                    </p>
+                </div>
+
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                    Tasdiqlash
+                </button>
+            </form>
+
+            <!-- Back to Login -->
+            <div class="text-center mt-6">
+                <a 
+                    href="/login" 
+                    class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                >
+                    Tizimga qaytish
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load OTP JavaScript -->
+    <script src="otp.js"></script>
+</body>
+</html>
