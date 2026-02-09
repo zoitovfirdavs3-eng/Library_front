@@ -1,0 +1,23 @@
+services:
+  # Static Site
+  - type: web
+    name: library-front
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: true # optional
+    previewsExpireAfterDays: 3 # optional
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://library-back-jhtj.onrender.com/api/*
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin

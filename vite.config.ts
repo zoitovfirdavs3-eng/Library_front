@@ -9,6 +9,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
@@ -25,6 +26,13 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
   },
-  // Remove server proxy for static deployment
-  // API calls will use environment variable or direct URLs
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://library-back-jhtj.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      }
+    }
+  }
 })
