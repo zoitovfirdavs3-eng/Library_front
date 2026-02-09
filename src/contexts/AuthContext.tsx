@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '@/api'
 import { useToast } from '@/hooks/use-toast'
+import { logger } from '@/utils/logger'
+import { setSecureToken, getSecureToken, clearSecureToken } from '@/utils/security'
 
 interface User {
   id: string
@@ -43,43 +46,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('accessToken')
-    console.log('🔍 Initial token check:', savedToken ? 'found' : 'not found')
+    const savedToken = getSecureToken()
+    logger.log('🔍 Initial token check:', savedToken ? 'found' : 'not found')
     
     if (savedToken && savedToken !== 'undefined' && savedToken !== 'null') {
       setToken(savedToken)
       fetchUser()
     } else {
-      console.log('🚫 No valid token found, setting loading to false')
+      logger.log('🚫 No valid token found, setting loading to false')
       setIsLoading(false)
     }
   }, [])
 
   const fetchUser = async () => {
-    const currentToken = localStorage.getItem('accessToken')
+    const currentToken = getSecureToken()
     
     // Safety guard: don't call API without valid token
     if (!currentToken || currentToken === 'undefined' || currentToken === 'null') {
-      console.log('🚫 No valid token for fetchUser, clearing state')
-      localStorage.removeItem('accessToken')
+      logger.log('🚫 No valid token for fetchUser, clearing state')
+      clearSecureToken()
       setToken(null)
       setIsLoading(false)
       return
     }
     
     try {
-      console.log('👤 Fetching user data with token')
+      logger.log('👤 Fetching user data with token')
       const response = await api.get('/auth/me')
       setUser(response.data.user)
-      console.log('✅ User data loaded successfully')
+      logger.log('✅ User data loaded successfully')
     } catch (error: any) {
-      console.error('❌ Failed to fetch user:', error)
+      logger.error('❌ Failed to fetch user:', error)
       
       // Only handle non-401 errors here (401 is handled by API interceptor)
       if (error.response?.status !== 401) {
-        localStorage.removeItem('accessToken')
+        clearSecureToken()
         setToken(null)
         toast({
           title: "Xatolik",
@@ -87,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           variant: "destructive",
         })
       }
-      // For 401 errors, let the API interceptor handle the redirect
+      // For 401 errors, let API interceptor handle redirect
     } finally {
       setIsLoading(false)
     }
@@ -95,41 +99,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('🔐 Attempting login with:', { email, password: '***' })
+      logger.log('🔐 Attempting login with:', { email, password: '***' })
       const response = await api.post('/auth/login', { email, password })
       
-      // DEBUG: Log the response to inspect token structure
-      console.log('📥 Login response:', response)
-      console.log('📥 Response data:', response.data)
+      // DEBUG: Log response to inspect token structure
+      logger.log('📥 Login response:', response)
+      logger.log('📥 Response data:', response.data)
       
       // Handle different response structures - ONLY use accessToken
       let accessToken = response.data?.accessToken
       
       // Validate token exists and is not undefined
       if (!accessToken || accessToken === 'undefined' || accessToken === 'null') {
-        console.error('❌ No valid accessToken found in response:', response.data)
+        logger.error('❌ No valid accessToken found in response:', response.data)
         throw new Error('Login response missing valid access token')
       }
       
-      console.log('✅ Extracted accessToken:', accessToken)
+      logger.log('✅ Extracted accessToken:', accessToken)
       setToken(accessToken)
-      localStorage.setItem('accessToken', accessToken)
-      console.log('💾 Token saved to localStorage')
-      
-      // Verify token was saved correctly
-      const savedToken = localStorage.getItem('accessToken')
-      console.log('🔍 Verification - saved token:', savedToken)
+      setSecureToken(accessToken)
+      logger.log('💾 Token saved securely')
       
       await fetchUser()
-      console.log('👤 User data fetched successfully')
+      logger.log('👤 User data fetched successfully')
     } catch (error) {
-      console.error('❌ Login error:', error)
+      logger.error('❌ Login error:', error)
       throw error
     }
   }
 
   const register = async (userData: RegisterData) => {
     try {
+      logger.log('🔐 Attempting registration:', userData)
+      logger.log('📧 User email:', userData.email)
       console.log('🔐 Attempting registration:', userData)
       console.log('📧 User email:', userData.email)
       
@@ -226,7 +228,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null)
     setToken(null)
-    localStorage.removeItem('accessToken')
+    clearSecureToken()
+    navigate('/login')
   }
 
   return (

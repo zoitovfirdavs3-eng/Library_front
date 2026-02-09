@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { logger } from '@/utils/logger'
+import { getSecureToken, clearSecureToken } from '@/utils/security'
 
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL || ''}/api`,
@@ -10,7 +12,7 @@ const api = axios.create({
 // Request interceptor - token qo'shish
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken')
+    const token = getSecureToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -18,7 +20,7 @@ api.interceptors.request.use(
     // DEBUG: Log final request URL
     const baseURL = config.baseURL || ''
     const url = config.url || ''
-    console.log('🌐 API Request:', config.method?.toUpperCase(), baseURL + url)
+    logger.log('🌐 API Request:', config.method?.toUpperCase(), baseURL + url)
     
     return config
   },
@@ -32,12 +34,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.log('🔐 401 Unauthorized - clearing token and redirecting')
-      localStorage.removeItem('accessToken')
+      logger.log('🔐 401 Unauthorized - clearing token and redirecting')
+      clearSecureToken()
       
       // Prevent infinite redirects
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-        console.log('🔄 Redirecting to login')
+        logger.log('🔄 Redirecting to login')
         window.location.href = '/login'
       }
     }

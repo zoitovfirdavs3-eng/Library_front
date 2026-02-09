@@ -13,11 +13,17 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
+    minify: 'esbuild',
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-label', '@radix-ui/react-slot', '@radix-ui/react-toast'],
+          utils: ['axios', 'react-hook-form', 'zod']
+        },
       },
     },
+    chunkSizeWarningLimit: 1000,
   },
   // Remove server proxy for static deployment
   // API calls will use environment variable or direct URLs
